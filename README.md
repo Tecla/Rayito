@@ -13,3 +13,7 @@ Stage 4 is, for now, the same as stage 3, and is where the most experimentation
 should happen.
 
 Don't be afraid to break things, crash, etc.  It's good for the soul!
+
+Please see the following blog post for more info:
+
+http://renderspud.blogspot.com/2012/04/basic-ray-tracer-stage-3.html
