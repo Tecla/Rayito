@@ -37,7 +37,7 @@ Ray makeCameraRay(float fieldOfViewInDegrees,
     Vector up = cross(right, forward).normalized();
     
     // Convert to radians, as that is what the math calls expect
-    float tanFov = std::tan(fieldOfViewInDegrees * kPi / 180.0f);
+    float tanFov = std::tan(fieldOfViewInDegrees * M_PI / 180.0f);
     
     Ray ray;
 

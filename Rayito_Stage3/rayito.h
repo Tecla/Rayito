@@ -13,12 +13,14 @@
 #include <algorithm>
 
 
+#ifndef M_PI
+    // For some reason, MSVC doesn't define this when <cmath> is included
+    #define M_PI 3.14159265358979
+#endif
+
+
 namespace Rayito
 {
-
-
-// Windows doesn't even define M_PI in the C standard library, so we'll define it ourselves, C++ style
-const float kPi = 3.1415926535f;
 
 
 //
@@ -469,7 +471,8 @@ public:
                         const Vector& incomingRayDirection,
                         const Vector& lightDirectionNorm)
     {
-        return std::pow(std::max(0.0f, dot(lightDirectionNorm, normal)), m_exponent) * m_color;
+        Vector halfVec = (lightDirectionNorm - incomingRayDirection).normalized();
+        return std::pow(std::max(0.0f, dot(halfVec, normal)), m_exponent) * m_color;
     }
     
 protected:
@@ -927,7 +930,7 @@ protected:
         // Find the radius based on that height that sits on the sphere surface
         float radius = std::sqrt(std::max(0.0f, 1.0f - z * z));
         // Find a random angle around the sphere's equator
-        float phi = kPi * 2.0f * u2;
+        float phi = M_PI * 2.0f * u2;
         // And put it all together...
         return Vector(radius * std::cos(phi),
                       radius * std::sin(phi),

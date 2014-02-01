@@ -13,12 +13,14 @@
 #include <algorithm>
 
 
+#ifndef M_PI
+    // For some reason, MSVC doesn't define this when <cmath> is included
+    #define M_PI 3.14159265358979
+#endif
+
+
 namespace Rayito
 {
-
-
-// Windows doesn't even define M_PI in the C standard library, so we'll define it ourselves, C++ style
-const float kPi = 3.1415926535f;
 
 
 //
@@ -298,7 +300,7 @@ typedef Vector Point;
 
 // Don't ever start a ray exactly where you previously hit; you must offset it
 // a little bit so you don't accidentally 'self-intersect'.
-const float kRayTMin = 0.00001f;
+const float kRayTMin = 0.0001f;
 // Unless otherwise specified, rays are defined to be able to hit anything as
 // far as the computer can see.  You can limit a ray's max if you need to though
 // as is done often when calculating shadows, so you only check the range from
@@ -469,7 +471,8 @@ public:
                         const Vector& incomingRayDirection,
                         const Vector& lightDirectionNorm)
     {
-        return std::pow(std::max(0.0f, dot(lightDirectionNorm, normal)), m_exponent) * m_color;
+        Vector halfVec = (lightDirectionNorm - incomingRayDirection).normalized();
+        return std::pow(std::max(0.0f, dot(halfVec, normal)), m_exponent) * m_color;
     }
     
 protected:
@@ -677,7 +680,7 @@ public:
         outPosition = m_position + m_side1 * u1 + m_side2 * u2;
         // Reference point out in back of the light?  That's okay, we'll flip
         // the normal to have a double-sided light.
-        if (dot(outNormal, outPosition - referencePosition) > 0.0f)
+        if (dot(outNormal, referencePosition - outPosition) < 0.0f)
         {
             outNormal *= -1.0f;
         }
@@ -927,12 +930,36 @@ protected:
         // Find the radius based on that height that sits on the sphere surface
         float radius = std::sqrt(std::max(0.0f, 1.0f - z * z));
         // Find a random angle around the sphere's equator
-        float phi = kPi * 2.0f * u2;
+        float phi = M_PI * 2.0f * u2;
         // And put it all together...
-        return Vector(radius * std::cos(phi),
-                      radius * std::sin(phi),
-                      z);
+        return Vector(radius * std::cos(phi), radius * std::sin(phi), z);
     }
+};
+
+
+//
+// Image (collection of colored pixels with a width x height
+//
+
+class Image
+{
+public:
+    Image(size_t width, size_t height)
+        : m_width(width), m_height(height), m_pixels(new Color[width * height]) { }
+    
+    virtual ~Image() { delete[] m_pixels; }
+    
+    size_t width()  const { return m_width; }
+    size_t height() const { return m_height; }
+    
+    Color& pixel(size_t x, size_t y)
+    {
+        return m_pixels[y * m_width + x];
+    }
+    
+protected:
+    size_t m_width, m_height;
+    Color *m_pixels;
 };
 
 

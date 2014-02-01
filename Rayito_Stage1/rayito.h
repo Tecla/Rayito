@@ -13,12 +13,14 @@
 #include <algorithm>
 
 
+#ifndef M_PI
+    // For some reason, MSVC doesn't define this when <cmath> is included
+    #define M_PI 3.14159265358979
+#endif
+
+
 namespace Rayito
 {
-
-
-// Windows doesn't even define M_PI in the C standard library, so we'll define it ourselves, C++ style
-const float kPi = 3.1415926535f;
 
 
 //

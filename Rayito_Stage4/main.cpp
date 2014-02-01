@@ -64,7 +64,7 @@ Ray makeCameraRay(float fieldOfViewInDegrees,
     Vector up = cross(right, forward).normalized();
     
     // Convert to radians, as that is what the math calls expect
-    float tanFov = std::tan(fieldOfViewInDegrees * kPi / 180.0f);
+    float tanFov = std::tan(fieldOfViewInDegrees * M_PI / 180.0f);
     
     Ray ray;
 
@@ -93,15 +93,20 @@ const size_t kNumLightSamplesU = 4;
 const size_t kNumLightSamplesV = 4;
 
 
-Color trace(const Ray& ray, ShapeSet& scene, std::list<Shape*>& lights, Rng& rng)
+Color trace(const Ray& ray, ShapeSet& scene, std::list<Shape*>& lights, Rng& rng, size_t lightSamplesHint)
 {
     Color result = Color(0.0f, 0.0f, 0.0f);
     
+    // Trace the initial ray to see if we hit anything
     Intersection intersection(ray);
     if (!scene.intersect(intersection))
     {
+        // No hit, return black (background)
         return result;
     }
+    
+    const size_t numLightSamplesU = lightSamplesHint;
+    const size_t numLightSamplesV = lightSamplesHint;
     
     // Add in emission at intersection
     result += intersection.m_pMaterial->emittance();
@@ -114,17 +119,17 @@ Color trace(const Ray& ray, ShapeSet& scene, std::list<Shape*>& lights, Rng& rng
     {
         // Sample the light (with stratified random sampling to reduce noise)
         Color lightResult = Color(0.0f, 0.0f, 0.0f);
-        for (size_t lsv = 0; lsv < kNumLightSamplesV; ++lsv)
+        for (size_t lsv = 0; lsv < numLightSamplesV; ++lsv)
         {
-            for (size_t lsu = 0; lsu < kNumLightSamplesU; ++lsu)
+            for (size_t lsu = 0; lsu < numLightSamplesU; ++lsu)
             {
                 // Ask the light for a random position/normal we can use
                 // for lighting
                 Point lightPoint;
                 Vector lightNormal;
                 Light *pLightShape = dynamic_cast<Light*>(*iter);
-                pLightShape->sampleSurface((lsu + rng.nextFloat()) / float(kNumLightSamplesU),
-                                           (lsv + rng.nextFloat()) / float(kNumLightSamplesV),
+                pLightShape->sampleSurface((lsu + rng.nextFloat()) / float(numLightSamplesU),
+                                           (lsv + rng.nextFloat()) / float(numLightSamplesV),
                                            position,
                                            lightPoint,
                                            lightNormal);
@@ -133,7 +138,7 @@ Color trace(const Ray& ray, ShapeSet& scene, std::list<Shape*>& lights, Rng& rng
                 // that light position
                 Vector toLight = lightPoint - position;
                 float lightDistance = toLight.normalize();
-                Ray shadowRay(position, toLight, lightDistance);
+                Ray shadowRay(position, toLight, lightDistance - kRayTMin);
                 Intersection shadowIntersection(shadowRay);
                 bool intersected = scene.intersect(shadowIntersection);
                 
@@ -141,7 +146,7 @@ Color trace(const Ray& ray, ShapeSet& scene, std::list<Shape*>& lights, Rng& rng
                 {
                     // The light point is visible, so let's add that
                     // lighting contribution
-                     lightResult += pLightShape->emitted() *
+                    lightResult += pLightShape->emitted() *
                         intersection.m_colorModifier *
                         intersection.m_pMaterial->shade(position,
                                                         intersection.m_normal,
@@ -150,7 +155,7 @@ Color trace(const Ray& ray, ShapeSet& scene, std::list<Shape*>& lights, Rng& rng
                 }
             }
         }
-        lightResult /= kNumLightSamplesU * kNumLightSamplesV;
+        lightResult /= numLightSamplesU * numLightSamplesV;
         
         result += lightResult;
     }
@@ -161,6 +166,10 @@ Color trace(const Ray& ray, ShapeSet& scene, std::list<Shape*>& lights, Rng& rng
 
 int main(int argc, char **argv)
 {
+    // Change these to suit yourself, or as an exercise grab them from the commandline
+    size_t pixelSamplesHint = 4;
+    size_t lightSamplesHint = 4;
+    
     // Available materials
     Lambert blueishLambert(Color(0.9f, 0.9f, 1.0f));
     Lambert purplishLambert(Color(0.9f, 0.7f, 0.8f));
@@ -231,9 +240,9 @@ int main(int argc, char **argv)
         {
             // For each sample in the pixel...
             Color pixelColor(0.0f, 0.0f, 0.0f);
-            for (size_t vsi = 0; vsi < kNumPixelSamplesV; ++vsi)
+            for (size_t vsi = 0; vsi < pixelSamplesHint; ++vsi)
             {
-                for (size_t usi = 0; usi < kNumPixelSamplesU; ++usi)
+                for (size_t usi = 0; usi < pixelSamplesHint; ++usi)
                 {
                     // Calculate a stratified random position within the pixel
                     // to hide aliasing.  Also, PPMs are top-down, and we're
@@ -249,11 +258,11 @@ int main(int argc, char **argv)
                                             xu,
                                             yu);
                     
-                    pixelColor += trace(ray, masterSet, lights, rng);
+                    pixelColor += trace(ray, masterSet, lights, rng, lightSamplesHint);
                 }
             }
             // Divide by the number of pixel samples (a box filter, essentially)
-            pixelColor /= kNumPixelSamplesU * kNumPixelSamplesV;
+            pixelColor /= pixelSamplesHint * pixelSamplesHint;
             
 #if WRITE_PFM
             fileStream << pixelColor.m_r << pixelColor.m_g << pixelColor.m_b;
