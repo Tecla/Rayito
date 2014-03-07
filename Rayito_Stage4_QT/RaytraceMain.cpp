@@ -279,8 +279,8 @@ Image* raytrace(size_t width, size_t height, size_t pixelSamplesHint, size_t lig
     
     // Chunk size is the number of pixels per image chunk (we have to take care
     // to deal with tiny images)
-    size_t xChunkSize = std::max(1UL, width / 4);
-    size_t yChunkSize = std::max(1UL, height / 4);
+    size_t xChunkSize = width >= 4 ? width / 4 : 1;
+    size_t yChunkSize = height >= 4 ? height / 4 : 1;
     // Chunks are the number of chunks in each dimension we can chop the image
     // into (again, taking care to deal with tiny images, and also images that
     // don't divide clealy into 4 chunks)

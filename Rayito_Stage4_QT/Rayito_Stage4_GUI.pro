@@ -20,3 +20,6 @@ HEADERS  += MainWindow.h \
     rayito.h
 
 FORMS    += MainWindow.ui
+
+QMAKE_CXXFLAGS += -Wno-unused-parameter
+
