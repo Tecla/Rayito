@@ -8,6 +8,7 @@
 #define __RMATH_H__
 
 #include <cmath>
+#include <algorithm>
 
 
 #ifndef M_PI
