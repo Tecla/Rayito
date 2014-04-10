@@ -49,10 +49,6 @@ namespace Rayito
 Mesh* createFromOBJFile(const char* filename)
 {
     std::ifstream input(filename);
-    if (!input.good())
-    {
-        return NULL;
-    }
     
     std::vector<Face> faces;
     std::vector<Point> verts;
@@ -60,13 +56,12 @@ Mesh* createFromOBJFile(const char* filename)
     
     std::string lineStr;
     std::string command;
-    while (!input.eof())
+    while (input.good())
     {
         lineStr.clear();
         std::getline(input, lineStr);
 
         std::istringstream lineInput(lineStr);
-
         if (lineInput.eof())
         {
             continue;
@@ -112,10 +107,12 @@ Mesh* createFromOBJFile(const char* filename)
         {
             faces.push_back(Face());
             Face& face = faces.back();
-            int vi;
-            lineInput >> vi;
-            while (!lineInput.fail() && lineInput.good())
+            while (lineInput.good())
             {
+                int vi;
+                lineInput >> vi;
+                if (lineInput.fail())
+                    break;
                 int uvi, ni;
                 bool gotUV = false;
                 bool gotN = false;
@@ -159,7 +156,6 @@ Mesh* createFromOBJFile(const char* filename)
                     if (ni >= (int)normals.size())
                         std::cerr << "Found out-of-range N index: " << ni << std::endl;
                 }
-                lineInput >> vi;
             }
         }
         else if (command == "usemtl")
@@ -179,6 +175,8 @@ Mesh* createFromOBJFile(const char* filename)
             
         }
     }
+    if (verts.empty() || faces.empty())
+        return NULL;
     return new Mesh(verts, normals, faces, NULL);
 }
 
