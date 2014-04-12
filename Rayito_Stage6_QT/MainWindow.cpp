@@ -119,7 +119,7 @@ void MainWindow::on_renderButton_clicked()
     Rayito::Mesh mesh0(vertices0, normals0, faces0, &reddishLambert);
     masterSet.addShape(&mesh0);
 
-    Rayito::Mesh* pOBJMesh = Rayito::createFromOBJFile("bumpy.obj");
+    Rayito::Mesh* pOBJMesh = Rayito::createFromOBJFile("../models/bumpy.obj");
     Rayito::GlossyMaterial reddishGlossy(Rayito::Color(0.8f, 0.1f, 0.1f), 0.3f);
     pOBJMesh->setMaterial(&reddishGlossy);
     masterSet.addShape(pOBJMesh);

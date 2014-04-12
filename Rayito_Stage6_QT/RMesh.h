@@ -135,7 +135,7 @@ public:
         else if (iter == m_faceAreaCDF.begin())
             faceIndex = 0;
         else
-            faceIndex = std::distance(iter, m_faceAreaCDF.begin()) - 1;
+            faceIndex = std::distance(m_faceAreaCDF.begin(), iter) - 1;
         // Find the actual triangle on the face we are choosing
         float faceArea = m_faceAreaCDF[faceIndex + 1] - m_faceAreaCDF[faceIndex];
         float triangleSelector = (u3 * m_totalArea - m_faceAreaCDF[faceIndex]) / faceArea;
