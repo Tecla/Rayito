@@ -25,7 +25,7 @@ and ray-mesh intersections.
 
 Stage 5 (Qt):
 
-Everything in stage 4, plus the follwing changes...
+Everything in stage 4, plus the following changes...
 
 * Path tracing!  Rayito stage 5 can do a full GI solution.
 * Sampler classes (only stratified random for now)
@@ -39,7 +39,7 @@ to do path tracing for real.  It is a bit simplified, but it does it right.
 
 Stage 4 (Qt):
 
-Everything in stage 3, plus the follwing changes...
+Everything in stage 3, plus the following changes...
 
 * Qt app wrapper so you can easily visualize the results, change samples/pixel, samples/light, etc
 * QThread implementation of multithreaded rendering (so we use more than one CPU core now)
