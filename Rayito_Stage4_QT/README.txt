@@ -1,6 +1,6 @@
 Stage 4:
 
-Everything in stage 3, plus the follwing changes...
+Everything in stage 3, plus the following changes...
 
 * Qt app wrapper so you can easily visualize the results, change samples/pixel, samples/light, etc
 * QThread implementation of multithreaded rendering (so we use more than one CPU core now)
