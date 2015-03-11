@@ -323,7 +323,7 @@ protected:
         else
         {
             // Use the geometric (flat-shaded) normal
-            shadingNormal = gnormal;
+            shadingNormal = gnormal.normalized();
         }
         
         intersection.m_t = t;
