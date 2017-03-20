@@ -286,7 +286,72 @@ inline Point kinematicPosition(const Point& start,
     return start + velocity * time + gravity * time * time * 0.5f;
 }
 
-void MainWindow::on_renderButton2_clicked()
+void MainWindow::on_renderButton2_clicked(){
+    // Make a picture...
+
+    // Available materials
+    DiffuseMaterial redLambert(Color(0.8f, 0.0f, 0.0f));
+    DiffuseMaterial greenLambert(Color(0.0f, 0.8f, 0.0f));
+    DiffuseMaterial whiteLambert(Color(0.8f, 0.8f, 0.8f));
+
+    // The 'scene'
+    ShapeSet masterSet;
+
+    // No ground plane this time...
+
+    // add all of the OBJ meshes for the tough Cornell box
+    Mesh* pWhiteBoxMesh = createFromOBJFile("../models/box_white.obj");
+    pWhiteBoxMesh->setMaterial(&whiteLambert);
+    masterSet.addShape(pWhiteBoxMesh);
+
+    Mesh* pRedBoxMesh = createFromOBJFile("../models/box_red.obj");
+    pRedBoxMesh->setMaterial(&redLambert);
+    masterSet.addShape(pRedBoxMesh);
+
+    Mesh* pGreenBoxMesh = createFromOBJFile("../models/box_green.obj");
+    pGreenBoxMesh->setMaterial(&greenLambert);
+    masterSet.addShape(pGreenBoxMesh);
+
+    Mesh* pMonkeyMesh = createFromOBJFile("../models/box_monkey.obj");
+    pMonkeyMesh->setMaterial(&whiteLambert);
+    masterSet.addShape(pMonkeyMesh);
+
+    Mesh* pLightMesh = createFromOBJFile("../models/box_light.obj");
+    pLightMesh->setMaterial(&whiteLambert);
+    ShapeLight meshLight(pLightMesh, Color(1.0f, 1.0f, 1.0f), 10.0f);
+    masterSet.addShape(&meshLight);
+
+    // Create the camera based on user settings
+    PerspectiveCamera cam((float)ui->camFovSpinBox->value(),
+                          Point(15.0f, 0.0f, 0.0f),
+                          Point(0.0f, 0.0f, 0.0f),
+                          Point(0.0f, 1.0f, 0.0f),
+                          (float)ui->focalDistanceSpinBox->value(),
+                          (float)ui->lensRadiusSpinBox->value(),
+                          (float)ui->shutterOpenSpinBox->value(),
+                          (float)ui->shutterCloseSpinBox->value());
+
+    // Ray trace!
+    Image *pImage = raytrace(masterSet,
+                             cam,
+                             (size_t)ui->widthSpinBox->value(),
+                             (size_t)ui->heightSpinBox->value(),
+                             (unsigned int)ui->pixelSamplesSpinBox->value(),
+                             (unsigned int)ui->lightSamplesSpinBox->value(),
+                             (unsigned int)ui->rayDepthSpinBox->value());
+
+    displayImage(pImage);
+
+    // Clean up the scene and render
+    delete pImage;
+    delete pWhiteBoxMesh;
+    delete pRedBoxMesh;
+    delete pGreenBoxMesh;
+    delete pMonkeyMesh;
+    delete pLightMesh;
+}
+
+/*void MainWindow::on_renderButton2_clicked_old()
 {
     // Make a picture...
     
@@ -387,7 +452,7 @@ void MainWindow::on_renderButton2_clicked()
     {
         delete cubes[i];
     }
-}
+}*/
 
 void MainWindow::on_actionRender_Scene_triggered()
 {
