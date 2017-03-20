@@ -106,16 +106,25 @@ struct SamplerContainer
     Sampler* m_lensSampler;
     Sampler* m_subpixelSampler;
     Sampler* m_timeSampler;
+    // These are for picking a light source from which to start the light path
+    Sampler* m_BDlightSelectionSampler; //pick a light
+    Sampler* m_BDlightElementSampler;   //pick an element within the light
+    Sampler* m_BDlightSampler;          //pick a point within the element
+    Sampler* m_BDlightDirectionSampler; //pick a direction to fire a ray from the light
+
     // This is sampled once per bounce to determine the next leg of the path
     std::vector<Sampler*> m_bounceSamplers;
+    // add a light bounce sampler for bidirectional path tracing (sampled once per light path bounce)
+    std::vector<Sampler*> m_lightBounceSamplers;
+
     // These are sampled N times per bounce (once for each light sample)
-    std::vector<Sampler*> m_lightSelectionSamplers;
-    std::vector<Sampler*> m_lightElementSamplers;
-    std::vector<Sampler*> m_lightSamplers;
+    std::vector<Sampler*> m_lightSelectionSamplers; //pick a light
+    std::vector<Sampler*> m_lightElementSamplers;   //pick an element within the light
+    std::vector<Sampler*> m_lightSamplers;          //pick a point within the element
     std::vector<Sampler*> m_brdfSamplers;
     
     unsigned int m_numLightSamples;
-    unsigned int m_maxRayDepth;
+    unsigned int m_maxRayDepth; //the same for the eye path and the light path
 };
 
 
@@ -132,6 +141,14 @@ Color pathTrace(const Ray& ray,
                 Rng& rng,
                 SamplerContainer& samplers,
                 unsigned int pixelSampleIndex);
+
+// Do bidirectional path tracing through the scene
+Color BDpathTrace(const Ray& ray,
+                  ShapeSet& scene,
+                  std::vector<Shape*>& lights,
+                  Rng& rng,
+                  SamplerContainer& samplers,
+                  unsigned int pixelSampleIndex);
 
 // Generate a ray-traced image of the scene, with the given camera, resolution,
 // and sample settings
