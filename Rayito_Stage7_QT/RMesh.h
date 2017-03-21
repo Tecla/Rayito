@@ -149,7 +149,7 @@ public:
         // Get the face index, taking care to make sure we get a face index in range
         size_t faceIndex;
         if (iter == m_faceAreaCDF.end())
-            faceIndex = m_faceAreaCDF.size() - 1;
+            faceIndex = m_faceAreaCDF.size() - 2;
         else if (iter == m_faceAreaCDF.begin())
             faceIndex = 0;
         else
