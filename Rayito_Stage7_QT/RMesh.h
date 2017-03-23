@@ -107,7 +107,7 @@ public:
         // area based on a random number (this means you can use meshes as area
         // lights).
         m_faceAreaCDF.clear();
-        m_faceAreaCDF.reserve(m_faces.size() + 1);
+        m_faceAreaCDF.reserve(m_faces.size());
         m_totalArea = 0.0f;
         for (size_t faceIndex = 0; faceIndex < m_faces.size(); ++faceIndex)
         {
@@ -119,10 +119,9 @@ public:
                 Point p2 = m_vertices[m_faces[faceIndex].m_vertexIndices[tri + 2]];
                 faceArea += cross(p1 - p0, p2 - p0).length() * 0.5f;
             }
-            m_faceAreaCDF.push_back(m_totalArea);
             m_totalArea += faceArea;
+            m_faceAreaCDF.push_back(m_totalArea);
         }
-        m_faceAreaCDF.push_back(m_totalArea);
         
         // Build the BVH so ray intersections are nice and fast
         m_bvh.build();
@@ -140,6 +139,8 @@ public:
                                Vector& outNormal,
                                float& outPdf)
     {
+        if (m_faces.empty())
+            return false;
         // Select a face based on a random number (u3), proportional to face
         // surface area; a face with double the surface area of another is twice
         // as likely to be selected.
@@ -149,13 +150,13 @@ public:
         // Get the face index, taking care to make sure we get a face index in range
         size_t faceIndex;
         if (iter == m_faceAreaCDF.end())
-            faceIndex = m_faceAreaCDF.size() - 2;
+            faceIndex = m_faceAreaCDF.size() - 1;
         else if (iter == m_faceAreaCDF.begin())
             faceIndex = 0;
         else
             faceIndex = std::distance(m_faceAreaCDF.begin(), iter) - 1;
         // Find the actual triangle on the face we are choosing
-        float faceArea = m_faceAreaCDF[faceIndex + 1] - m_faceAreaCDF[faceIndex];
+        float faceArea = faceIndex > 0 ? m_faceAreaCDF[faceIndex] - m_faceAreaCDF[faceIndex - 1] : m_faceAreaCDF[0];
         float triangleSelector = (u3 * m_totalArea - m_faceAreaCDF[faceIndex]) / faceArea;
         float triangleAreaSoFar = 0.0f;
         for (size_t tri = 0; tri < m_faces[faceIndex].m_vertexIndices.size() - 2; ++tri)
@@ -218,7 +219,12 @@ public:
     
     virtual float elementArea(unsigned int index) const
     {
-        return m_faceAreaCDF[index + 1] - m_faceAreaCDF[index];
+        if (m_faces.empty() || index >= m_faces.size())
+            return 0.0f;
+        else if (index == 0)
+            return m_faceAreaCDF[0];
+        else
+            return m_faceAreaCDF[index] - m_faceAreaCDF[index - 1];
     }
     
     // Methods for BVH intersection
